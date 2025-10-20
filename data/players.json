@@ -1,0 +1,8 @@
+[
+  { "id": 1, "name": "Igrač 1", "position": "GK", "number": 1 },
+  { "id": 2, "name": "Igrač 2", "position": "DF", "number": 4 },
+  { "id": 3, "name": "Igrač 3", "position": "MF", "number": 8 },
+  { "id": 4, "name": "Igrač 4", "position": "FW", "number": 9 },
+  { "id": 5, "name": "Igrač 5", "position": "DF", "number": 5 },
+  { "id": 6, "name": "Igrač 6", "position": "MF", "number": 10 }
+]
