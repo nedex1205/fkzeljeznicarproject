@@ -1,0 +1,26 @@
+[
+  {
+    "id": 201,
+    "name": "Dres (Home)",
+    "price": 89.9,
+    "img": "https://images.unsplash.com/photo-1546514355-7fdc90ccbd13?q=80&w=1200&auto=format&fit=crop"
+  },
+  {
+    "id": 202,
+    "name": "Šal Željo",
+    "price": 19.9,
+    "img": "https://images.unsplash.com/photo-1546519638-68e109498ffc?q=80&w=1200&auto=format&fit=crop"
+  },
+  {
+    "id": 203,
+    "name": "Kapa",
+    "price": 14.9,
+    "img": "https://images.unsplash.com/photo-1483985988355-763728e1932f?q=80&w=1200&auto=format&fit=crop"
+  },
+  {
+    "id": 204,
+    "name": "Dres (Away)",
+    "price": 89.9,
+    "img": "https://images.unsplash.com/photo-1543322748-33df6d3db806?q=80&w=1200&auto=format&fit=crop"
+  }
+]
