@@ -1,42 +1,82 @@
 <?php
 declare(strict_types=1);
-require_once __DIR__ . '/../services/DB.php';
 
-final class OrderDao {
-  private PDO $db;
-  public function __construct(){ $this->db = DB::conn(); }
+require_once __DIR__ . '/BaseDao.php';
 
-  public function create(int $userId, string $status='NEW'): int {
-    $s=$this->db->prepare("INSERT INTO orders (user_id,status,total) VALUES (?,?,0)");
-    $s->execute([$userId,$status]);
-    return (int)$this->db->lastInsertId();
-  }
-  public function list(): array {
-    $s=$this->db->query("SELECT * FROM orders ORDER BY id DESC"); return $s->fetchAll();
-  }
-  public function get(int $id): ?array {
-    $o=$this->db->prepare("SELECT * FROM orders WHERE id=?"); $o->execute([$id]);
-    $row=$o->fetch(); if(!$row) return null;
-    $i=$this->db->prepare("SELECT * FROM order_items WHERE order_id=?"); $i->execute([$id]);
-    $row['items']=$i->fetchAll();
-    return $row;
-  }
-  public function addItem(int $orderId,int $productId,int $qty): bool {
-    $p=$this->db->prepare("SELECT price FROM products WHERE id=?"); $p->execute([$productId]);
-    $r=$p->fetch(); if(!$r) return false;
-    $unit=$r['price'];
-    $i=$this->db->prepare("INSERT INTO order_items (order_id,product_id,qty,unit_price) VALUES (?,?,?,?)");
-    return $i->execute([$orderId,$productId,$qty,$unit]);
-  }
-  public function finalizeTotal(int $orderId): bool {
-    $sql="UPDATE orders o JOIN (SELECT order_id, SUM(qty*unit_price) s FROM order_items WHERE order_id=? ) x
-          ON o.id=x.order_id SET o.total=x.s WHERE o.id=?";
-    $st=$this->db->prepare($sql); return $st->execute([$orderId,$orderId]);
-  }
-  public function updateStatus(int $orderId,string $status): bool {
-    $st=$this->db->prepare("UPDATE orders SET status=? WHERE id=?"); return $st->execute([$status,$orderId]);
-  }
-  public function delete(int $id): bool {
-    $st=$this->db->prepare("DELETE FROM orders WHERE id=?"); return $st->execute([$id]);
-  }
+final class OrderDao extends BaseDao {
+
+    public function __construct() {
+        parent::__construct();
+        $this->table  = 'orders';
+        $this->fields = ['user_id','status','total'];
+    }
+
+
+    public function get(int $id): ?array {
+  
+        $sql = "SELECT * FROM {$this->table} WHERE {$this->idColumn} = :id";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([':id' => $id]);
+        $order = $stmt->fetch();
+        if (!$order) return null;
+
+       
+        $stmt = $this->db->prepare("SELECT * FROM order_items WHERE order_id = :id");
+        $stmt->execute([':id' => $id]);
+        $order['items'] = $stmt->fetchAll();
+
+        return $order;
+    }
+
+ 
+    public function getByUserId(int $user_id): array {
+        $sql = "SELECT * FROM {$this->table} WHERE user_id = :uid ORDER BY {$this->idColumn} DESC";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([':uid' => $user_id]);
+        return $stmt->fetchAll();
+    }
+
+
+    public function addItem(int $orderId, int $productId, int $qty): bool {
+        
+        $p = $this->db->prepare("SELECT price FROM products WHERE id = :pid");
+        $p->execute([':pid' => $productId]);
+        $row = $p->fetch();
+        if (!$row) return false;
+
+        $unitPrice = $row['price'];
+
+        $sql = "INSERT INTO order_items (order_id, product_id, qty, unit_price)
+                VALUES (:oid, :pid, :qty, :price)";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([
+            ':oid'   => $orderId,
+            ':pid'   => $productId,
+            ':qty'   => $qty,
+            ':price' => $unitPrice
+        ]);
+    }
+
+ 
+    public function finalizeTotal(int $orderId): bool {
+        $sql = "UPDATE orders o
+                JOIN (
+                    SELECT order_id, SUM(qty * unit_price) AS total_sum
+                    FROM order_items
+                    WHERE order_id = :oid
+                ) x ON o.id = x.order_id
+                SET o.total = x.total_sum
+                WHERE o.id = :oid2";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([':oid' => $orderId, ':oid2' => $orderId]);
+    }
+
+  
+    public function updateStatus(int $orderId, string $status): bool {
+        $sql = "UPDATE orders SET status = :st WHERE id = :id";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([':st' => $status, ':id' => $orderId]);
+    }
+
+    
 }
