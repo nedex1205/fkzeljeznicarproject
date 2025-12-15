@@ -1,7 +1,7 @@
 $(document).ready(function () {
   $("main#spapp > section").height($(document).height() - 60);
 
-  var app = $.spapp({ pageNotFound: "error_404" }); // initialize
+  var app = $.spapp({ defaultView: "#home" });
 
   // define routes
   app.route({
@@ -47,6 +47,16 @@ $(document).ready(function () {
   app.route({
     view: "contact",
     load: "contact.html",
+  });
+
+  app.route({
+    view: "register",
+    load: "register.html",
+  });
+
+  app.route({
+    view: "dashboard",
+    load: "dashboard.html",
   });
 
   // run app

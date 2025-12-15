@@ -164,7 +164,7 @@ DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `email` varchar(120) NOT NULL,
-  `password_hash` varchar(255) NOT NULL,
+  `password` varchar(255) NOT NULL,
   `full_name` varchar(120) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
@@ -181,6 +181,15 @@ LOCK TABLES `users` WRITE;
 INSERT INTO `users` VALUES (1,'demo@zeljo.ba','$2y$10$g6b4wFxHashExampleHashHashHashHashabcd123456789012345678','Demo User','2025-11-02 22:31:08');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
+
+
+
+ALTER TABLE users
+ADD COLUMN role VARCHAR(20) NOT NULL DEFAULT 'user';
+
+
+UPDATE users SET role = 'admin' WHERE email = 'admin@zeljo.ba';
+
 
 --
 -- Dumping routines for database 'fkzeljeznicarpro'

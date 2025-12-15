@@ -6,8 +6,7 @@ require_once __DIR__ . '/BaseDao.php';
 final class PlayerDao extends BaseDao {
 
     public function __construct() {
-        parent::__construct();
-        $this->table  = 'players';
+        parent::__construct('players');
         $this->fields = ['name','position','number_'];
     }
 

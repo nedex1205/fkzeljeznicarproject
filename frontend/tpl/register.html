@@ -1,31 +1,32 @@
 <div class="container py-4">
-  <h2 class="mb-3">Prijava</h2>
+  <h2 class="mb-3">Registracija</h2>
 
   <div class="card p-3">
     <div class="mb-3">
       <label class="form-label">Email</label>
       <input
-        id="loginEmail"
+        id="regEmail"
         type="email"
         class="form-control"
-        placeholder="user@test.com"
+        placeholder="new@test.com"
       />
     </div>
 
     <div class="mb-3">
       <label class="form-label">Password</label>
       <input
-        id="loginPassword"
+        id="regPassword"
         type="password"
         class="form-control"
         placeholder="••••••"
       />
     </div>
 
-    <button class="btn btn-primary" id="btnLogin">Login</button>
+    <button class="btn btn-success" id="btnRegister">Register</button>
 
-    <div class="mt-3">Nemaš račun? <a href="#register">Registruj se</a></div>
+    <div class="mt-3">Već imaš račun? <a href="#login">Prijavi se</a></div>
 
-    <div class="mt-2 text-danger" id="loginError"></div>
+    <div class="mt-2 text-danger" id="regError"></div>
+    <div class="mt-2 text-success" id="regOk"></div>
   </div>
 </div>
