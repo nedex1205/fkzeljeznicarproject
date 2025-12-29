@@ -6,7 +6,6 @@ header("Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authentication, Authorization");
 header("Access-Control-Allow-Credentials: true");
 
-// Preflight (OPTIONS) request
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
@@ -30,7 +29,7 @@ require __DIR__ . '/dao/PlayerDao.php';
 require __DIR__ . '/dao/MatchDao.php';
 require __DIR__ . '/dao/UserDao.php';
 require __DIR__ . '/dao/OrderDao.php';
-require __DIR__ . '/dao/AuthDao.php'; 
+require __DIR__ . '/dao/AuthDao.php';
 
 require __DIR__ . '/services/BaseService.php';
 require __DIR__ . '/services/ProductService.php';
@@ -46,21 +45,27 @@ Flight::set('matchService',   new MatchService());
 Flight::set('userService',    new UserService());
 Flight::set('orderService',   new OrderService());
 
+
 Flight::register('auth_service', AuthService::class);
+
 
 Flight::route('/*', function () {
 
     $url = Flight::request()->url;
-    $method = Flight::request()->method;
+    $method = strtoupper(Flight::request()->method);
 
-    // ✅ whitelist auth rute (radi i sa index.php u putanji)
-    if (
-        strpos($url, 'auth/login') !== false ||
-        strpos($url, 'auth/register') !== false
-    ) {
-        return true;
-    }
+    // normalizuj
+    $url = '/' . ltrim($url, '/');
 
+// PUBLIC endpoints
+    if ($method === 'OPTIONS') return true;
+    if ($url === '/' || $url === '' ) return true;
+    if (strpos($url, '/auth/login') === 0) return true;
+    if (strpos($url, '/auth/register') === 0) return true;
+    if (strpos($url, '/auth/ping') === 0) return true; // privremeno, možeš poslije maknuti
+
+
+    
     try {
         $token = Flight::request()->getHeader("Authentication");
         if (!$token) {
@@ -68,13 +73,15 @@ Flight::route('/*', function () {
         }
 
         $decoded = JWT::decode($token, new Key(Config::JWT_SECRET(), 'HS256'));
-        $user = $decoded->user;
+        $user = $decoded->user ?? null;
+
+        if (!$user) {
+            Flight::halt(401, "Invalid token payload");
+        }
 
         Flight::set('user', $user);
 
-        $is_write = in_array($method, ['POST', 'PUT', 'PATCH', 'DELETE']);
-
-        // ✅ role fallback
+        $is_write = in_array($method, ['POST', 'PUT', 'PATCH', 'DELETE'], true);
         $role = $user->role ?? 'user';
 
         if ($is_write && $role !== 'admin') {
@@ -87,8 +94,6 @@ Flight::route('/*', function () {
         Flight::halt(401, $e->getMessage());
     }
 });
-
-
 
 
 require __DIR__ . '/routes/AuthRoute.php';

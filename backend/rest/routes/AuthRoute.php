@@ -1,6 +1,8 @@
 <?php
-use Firebase\JWT\JWT;
-use Firebase\JWT\Key;
+Flight::route('GET /ping', function () {
+  Flight::json(['ok' => true]);
+});
+
 Flight::group('/auth', function() {
    /**
     * @OA\Post(

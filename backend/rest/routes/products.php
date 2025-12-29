@@ -16,25 +16,39 @@ Flight::route('GET /products/@id', function ($id) {
 Flight::route('POST /products', function () {
     $s = Flight::get('productService');
     $data = json_decode(file_get_contents('php://input'), true) ?? [];
-    $id = $s->add($data);
-    Flight::json(['id' => $id], 201);
-});
 
+    try {
+        $id = $s->add($data);
+        Flight::json(['id' => $id], 201);
+    } catch (Exception $e) {
+        Flight::json(['error' => $e->getMessage()], 400);
+    }
+});
 
 Flight::route('PUT /products/@id', function ($id) {
     $s = Flight::get('productService');
     $data = json_decode(file_get_contents('php://input'), true) ?? [];
-    $ok = $s->update($id, $data);
-    Flight::json(['ok' => (bool)$ok]);
-});
 
+    try {
+        $ok = $s->update($id, $data);
+        Flight::json(['ok' => (bool)$ok]);
+    } catch (Exception $e) {
+        Flight::json(['error' => $e->getMessage()], 400);
+    }
+});
 
 Flight::route('PATCH /products/@id', function ($id) {
     $s = Flight::get('productService');
     $data = json_decode(file_get_contents('php://input'), true) ?? [];
-    $ok = $s->update($id, $data);
-    Flight::json(['ok' => (bool)$ok]);
+
+    try {
+        $ok = $s->update($id, $data);
+        Flight::json(['ok' => (bool)$ok]);
+    } catch (Exception $e) {
+        Flight::json(['error' => $e->getMessage()], 400);
+    }
 });
+
 
 
 Flight::route('DELETE /products/@id', function ($id) {

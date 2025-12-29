@@ -18,63 +18,74 @@ class AuthService extends BaseService {
    }
 
 
-   public function register($entity) {  
-       if (empty($entity['email']) || empty($entity['password'])) {
-           return ['success' => false, 'error' => 'Email and password are required.'];
-       }
+   public function register($entity) {
+    
+    $email = trim((string)($entity['email'] ?? ''));
+    $password = (string)($entity['password'] ?? '');
 
+    if ($email === '' || $password === '') {
+        return ['success' => false, 'error' => 'Email and password are required.'];
+    }
 
-       $email_exists = $this->auth_dao->get_user_by_email($entity['email']);
-       if($email_exists){
-           return ['success' => false, 'error' => 'Email already registered.'];
-       }
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        return ['success' => false, 'error' => 'Invalid email format.'];
+    }
 
+    if (strlen($password) < 6) {
+        return ['success' => false, 'error' => 'Password must be at least 6 characters long.'];
+    }
 
-       $entity['password'] = password_hash($entity['password'], PASSWORD_BCRYPT);
+    $email_exists = $this->auth_dao->get_user_by_email($email);
+    if ($email_exists) {
+        return ['success' => false, 'error' => 'Email already registered.'];
+    }
 
+    $entity['email'] = $email;
+    $entity['password'] = password_hash($password, PASSWORD_BCRYPT);
 
-       $entity = parent::add($entity);
+    if (!isset($entity['role']) || $entity['role'] === '') {
+        $entity['role'] = 'user';
+    }
 
+    $entity = parent::add($entity);
 
-       unset($entity['password']);
+    unset($entity['password']);
+    return ['success' => true, 'data' => $entity];
+}
 
+public function login($entity) {
+    
+    $email = trim((string)($entity['email'] ?? ''));
+    $password = (string)($entity['password'] ?? '');
 
-       return ['success' => true, 'data' => $entity];             
-   }
+    if ($email === '' || $password === '') {
+        return ['success' => false, 'error' => 'Email and password are required.'];
+    }
 
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        return ['success' => false, 'error' => 'Invalid email format.'];
+    }
 
-   public function login($entity) {  
-       if (empty($entity['email']) || empty($entity['password'])) {
-           return ['success' => false, 'error' => 'Email and password are required.'];
-       }
+    if (strlen($password) < 6) {
+        return ['success' => false, 'error' => 'Invalid username or password.'];
+    }
 
+    $user = $this->auth_dao->get_user_by_email($email);
+    if (!$user || !password_verify($password, $user['password'])) {
+        return ['success' => false, 'error' => 'Invalid username or password.'];
+    }
 
-       $user = $this->auth_dao->get_user_by_email($entity['email']);
-       if(!$user){
-           return ['success' => false, 'error' => 'Invalid username or password.'];
-       }
+    unset($user['password']);
 
+    $jwt_payload = [
+        'user' => $user,
+        'iat'  => time(),
+        'exp'  => time() + (60 * 60 * 24)
+    ];
 
-       if(!$user || !password_verify($entity['password'], $user['password']))
-           return ['success' => false, 'error' => 'Invalid username or password.'];
+    $token = JWT::encode($jwt_payload, Config::JWT_SECRET(), 'HS256');
 
+    return ['success' => true, 'data' => array_merge($user, ['token' => $token])];
+}
 
-       unset($user['password']);
-      
-       $jwt_payload = [
-           'user' => $user,
-           'iat' => time(),
-           'exp' => time() + (60 * 60 * 24)
-       ];
-
-
-       $token = JWT::encode(
-           $jwt_payload,
-           Config::JWT_SECRET(),
-           'HS256'
-       );
-
-
-       return ['success' => true, 'data' => array_merge($user, ['token' => $token])];             
-   }
 }
