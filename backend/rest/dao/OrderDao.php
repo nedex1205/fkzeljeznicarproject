@@ -6,8 +6,7 @@ require_once __DIR__ . '/BaseDao.php';
 final class OrderDao extends BaseDao {
 
     public function __construct() {
-        parent::__construct();
-        $this->table  = 'orders';
+        parent::__construct('orders');
         $this->fields = ['user_id','status','total'];
     }
 

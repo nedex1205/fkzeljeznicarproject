@@ -5,23 +5,45 @@ require_once __DIR__ . '/../services/DB.php';
 require_once __DIR__ . '/CrudDao.php';
 
 abstract class BaseDao implements CrudDao {
-    @var PDO 
-    protected $db;
 
-    @var string 
-    protected $table;
+    /**
+     * @var PDO
+     */
+    protected PDO $db;
 
-    @var string 
-    protected $idColumn = 'id';
+    /**
+     * @var string
+     */
+    protected string $table;
 
-   
-    protected $fields = [];
+    /**
+     * @var string
+     */
+    protected string $idColumn = 'id';
 
-    public function __construct() {
+    /**
+     * @var array
+     */
+    protected array $fields = [];
+
+    public function __construct(string $table) {
         $this->db = DB::conn();
+        $this->table = $table;
     }
 
-  
+    protected function query(string $query, array $params = []): array {
+       $stmt = $this->db->prepare($query);
+       $stmt->execute($params);
+       return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    protected function query_unique(string $query, array $params = []): ?array {
+        $stmt = $this->db->prepare($query);
+        $stmt->execute($params);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $row ? $row : null;
+    } 
+
 
     public function create(array $data): int {
         $data = $this->filterFields($data);
